@@ -6,10 +6,10 @@ It leverages powerful open-source tools like **FFmpeg**, **pngquant**, **MozJPEG
 ---
 
 ## 🚀 Features
-- Optimize **PNG** images using `pngquant`  
-- Compress **JPEG** images using `MozJPEG`  
-- Compress **GIF** files with `gifsicle`  
-- Compress video with **FFmpeg**  
+- Optimize **PNG** images using [pngquant](https://pngquant.org/)
+- Compress **JPEG** images using [MozJPEG](https://github.com/mozilla/mozjpeg) 
+- Compress **GIF** files with [gifsicle](https://www.lcdf.org/gifsicle/)
+- Compress video with [FFmpeg](https://ffmpeg.org/)
 
 ---
 
