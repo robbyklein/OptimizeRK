@@ -1,6 +1,6 @@
-﻿# OptimizerK
+﻿# OptimizeRK
 
-**OptimizerK** is an open-source application for optimizing images and media files.  
+**OptimizeRK** is an open-source application for optimizing images and media files.  
 It leverages powerful open-source tools like **FFmpeg**, **pngquant**, **MozJPEG**, and **gifsicle** to provide high-quality compression and conversion.
 
 ---
