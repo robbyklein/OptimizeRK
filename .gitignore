@@ -1,0 +1,53 @@
+# Build results
+[Bb]in/
+[Bb]uild/
+[Oo]bj/
+[Ll]og/
+installer/Output/
+Debug/
+Release/
+x64/
+x86/
+[Aa]rtifacts/
+*.exe
+*.dll
+*.app
+*.so
+*.dylib
+
+# Avalonia build outputs
+*.axaml.g.cs
+*.g.cs
+*.designer.cs
+
+# Rider / VS Code / Visual Studio
+.idea/
+.vscode/
+.vs/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+*.nuget.props
+*.nuget.targets
+packages/
+*.lock.json
+
+# Cache
+*.cache
+*.db
+*.pdb
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db

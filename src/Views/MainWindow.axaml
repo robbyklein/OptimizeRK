@@ -1,0 +1,132 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="clr-namespace:OptimizeRK.ViewModels"
+	xmlns:models="clr-namespace:OptimizeRK.Models"
+	x:Class="OptimizeRK.MainWindow"
+	x:CompileBindings="True"
+	x:DataType="vm:MainWindowViewModel"
+	Title="OptimizeRK"
+	Width="740"
+	Height="440"
+	RequestedThemeVariant="Dark"
+	xmlns:conv="clr-namespace:OptimizeRK.Converters"
+	Icon="/Images/favicon.ico"
+>
+	<!-- Design-time DataContext for preview -->
+	<Window.Resources>
+		<conv:StatusToIconConverter x:Key="StatusToIconConverter"/>
+	</Window.Resources>
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+	<Grid RowDefinitions="*,50" Background="#121116" x:Name="DropZone" DragDrop.AllowDrop="True">
+		
+	
+		<!-- Top  -->
+		<Border Grid.Row="0" BorderBrush="#2D2A36" BorderThickness="0,1,0,0">
+		<Grid >
+			<!-- No Files yet -->
+			<Grid IsVisible="{Binding HasFiles, Converter={x:Static BoolConverters.Not}}">
+
+				<!-- 3 rows: top spacer, content, bottom spacer -->
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+
+				<!-- Centered content goes in the middle row -->
+				<StackPanel Grid.Row="1"
+							Orientation="Vertical"
+							Spacing="15"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center">
+
+					<Svg
+						Path="avares://OptimizeRK/Images/drop.svg"
+						Width="40"
+					/>
+
+					<TextBlock
+						Text="Drag files here"
+						Foreground="#333138"
+						FontSize="20"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center"/>
+				</StackPanel>
+			</Grid>
+
+			<!-- With Files -->
+			<DataGrid
+				ItemsSource="{Binding Files}"
+				AutoGenerateColumns="False"
+				IsReadOnly="True"
+				IsVisible="{Binding HasFiles}"
+			>
+				<DataGrid.Columns>
+					<DataGridTemplateColumn Header="" Width="60">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+										   FontSize="14"
+										   HorizontalAlignment="Center"
+										   VerticalAlignment="Center"/>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+
+					<DataGridTemplateColumn Header="File" Width="*">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<TextBlock 
+									Text="{Binding Name}"
+									FontSize="13"
+									TextTrimming="CharacterEllipsis"
+									TextWrapping="NoWrap"
+									VerticalAlignment="Center"
+								/>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+					<DataGridTextColumn FontSize="13" Header="Size" Binding="{Binding OriginalSizeDisplay}" Width="120"/>
+					<DataGridTextColumn FontSize="13" Header="New Size" Binding="{Binding NewSizeDisplay}" Width="Auto"/>
+					<DataGridTextColumn FontSize="13" Header="Savings" Binding="{Binding SavingsDisplay}" Width="Auto"/>
+				</DataGrid.Columns>
+			</DataGrid>
+		</Grid>
+			</Border>
+
+		<!-- Bottom Bar -->
+		<Border Grid.Row="1" BorderBrush="#2D2A36" BorderThickness="0,1,0,0">
+			<Grid  ColumnDefinitions="*,Auto" Background="#1A181F">
+
+				<StackPanel Margin="16,0" Grid.Column="0" Orientation="Horizontal" Spacing="12">
+					<Button Height="30" Width="36" Background="rgba(255,255,255,0.05)" Click="OnSettingsClick">
+						<Svg
+							VerticalAlignment="Center"
+							HorizontalAlignment="Center"
+							Width="16"
+							Height="16"
+							Path="avares://OptimizeRK/Images/settings.svg"
+							
+						/>
+					</Button>
+					<TextBlock FontSize="13" Foreground="#BAB9BB" VerticalAlignment="Center" Text="{Binding SummaryText}" />	
+				</StackPanel>
+
+
+				<Button Margin="16 0" Height="30" Width="36" Grid.Column="1" Background="rgba(255,255,255,0.05)" Click="OnInfoClick">
+					<Svg
+		
+						Width="16"
+						Height="16"
+						Path="avares://OptimizeRK/Images/info.svg"
+			
+					/>
+				</Button>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>
+

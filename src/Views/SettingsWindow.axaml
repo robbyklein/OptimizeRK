@@ -1,0 +1,142 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="clr-namespace:OptimizeRK.ViewModels"
+	x:Class="OptimizeRK.SettingsWindow"
+	x:CompileBindings="True"
+	x:DataType="vm:SettingsViewModel"
+	Title="Settings"
+	Width="550"
+	Height="330"
+>
+	<!-- Design-time DataContext -->
+	<Design.DataContext>
+		<vm:SettingsViewModel/>
+	</Design.DataContext>
+
+	<!--Settings -->
+	<StackPanel Margin="16" Spacing="0">
+
+		<!-- JPG Quality  -->
+		<Grid ColumnDefinitions="120,*,40">
+			<TextBlock
+				Grid.Column="0"
+				FontWeight="SemiBold"
+				Text="JPG Quality"
+				VerticalAlignment="Center"
+			/>
+			<Slider 
+				Grid.Column="1"
+				Minimum="1"
+				Maximum="100"
+				Value="{Binding JpgQuality}"
+				VerticalAlignment="Center"
+			/>
+			<TextBlock 
+				Grid.Column="2"
+				Text="{Binding JpgQuality}"
+				VerticalAlignment="Center"
+				TextAlignment="Center"
+			/>
+		</Grid>
+
+		<!-- PNG -->
+		<Grid ColumnDefinitions="120,*,40">
+			<TextBlock 
+				FontWeight="SemiBold"
+				Grid.Column="0"
+				Text="PNG Quality"
+				VerticalAlignment="Center"
+			/>
+			<Slider 
+				Grid.Column="1"
+				Minimum="1"
+				Maximum="100"
+				Value="{Binding PngQuality}"
+				VerticalAlignment="Center"
+			/>
+			<TextBlock 
+				Grid.Column="2"
+				Text="{Binding PngQuality}"
+				VerticalAlignment="Center"
+				TextAlignment="Center"
+			/>
+		</Grid>
+
+		<!-- GIF -->
+		<Grid ColumnDefinitions="120,*,40">
+			<TextBlock
+				FontWeight="SemiBold"
+				Grid.Column="0"
+				Text="GIF Quality"
+				VerticalAlignment="Center"
+			/>
+			<Slider 
+				Grid.Column="1"
+				Minimum="1"
+				Maximum="100"
+				Value="{Binding GifQuality}"
+				VerticalAlignment="Center"
+			/>
+			<TextBlock
+				Grid.Column="2"
+				Text="{Binding GifQuality}"
+				VerticalAlignment="Center" 
+				TextAlignment="Center"
+			/>
+		</Grid>
+
+		<!-- MP4 -->
+		<Grid ColumnDefinitions="120,*,40" VerticalAlignment="Center" Margin="0,6">
+			<TextBlock
+				FontWeight="SemiBold"
+				Grid.Column="0"
+				Text="MP4 Quality"
+				VerticalAlignment="Center"
+			/>
+			<Slider 
+				Grid.Column="1"
+				Minimum="1"
+				Maximum="100"
+				Value="{Binding Mp4Quality}"
+				VerticalAlignment="Center"
+			/>
+			<TextBlock
+				Grid.Column="2"
+				Text="{Binding Mp4Quality}"
+				VerticalAlignment="Center"
+				TextAlignment="Center"
+			/>
+		</Grid>
+
+		<!-- Parallelism -->
+		<Grid 
+			ColumnDefinitions="120,*,40">
+			<TextBlock 
+				Grid.Column="0"
+				Text="Parallelism"
+				VerticalAlignment="Center"
+				FontWeight="SemiBold"
+			/>
+			<Slider
+				Grid.Column="1"
+				Minimum="1"
+				Maximum="32"
+				Value="{Binding MaxParallelism}"
+				VerticalAlignment="Center"
+			/>
+			<TextBlock 
+				Grid.Column="2"
+				Text="{Binding MaxParallelism}"
+				VerticalAlignment="Center" TextAlignment="Center"
+			/>
+		</Grid>
+
+		<!-- Replace -->
+		<CheckBox
+			Content="Replace original file"
+			IsChecked="{Binding ReplaceOriginalFile}" 
+		/>
+
+	</StackPanel>
+</Window>
