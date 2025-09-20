@@ -54,6 +54,37 @@ public class FileOptimizer(Settings settings) {
         await Task.WhenAll(tasks);
     }
 
+    private string BuildFfmpegArgs(FileItem file, string tempOutput) {
+        // Calculate CRF based on quality (lower CRF = higher quality)
+        var crf = (int)(51 - (settings.Mp4Quality / 100.0 * 51));
+
+        // Audio
+        var audioArgMp4 = settings.RemoveAudio ? "-an" : "-c:a copy";
+        var audioArgWebm = settings.RemoveAudio ? "-an" : "-c:a libopus";
+
+        // Scaling (based on width now)
+        var scaleArg = settings.ScaleVideo == VideoScale.Original
+            ? string.Empty
+            : $"-vf scale={(int)settings.ScaleVideo}:-2";
+
+        // Always output MP4
+        var args =
+            $"-hide_banner -loglevel info -i \"{file.Path}\" " +
+            $"-c:v libx264 -preset fast -crf {crf} {scaleArg} {audioArgMp4} -y \"{tempOutput}\"";
+
+        // Optionally also output WebM
+        if (settings.OutputWebm) {
+            var webmOutput = Path.Combine(
+                Path.GetDirectoryName(file.Path)!,
+                Path.GetFileNameWithoutExtension(file.Path) + "_optimized.webm");
+
+            args += " " +
+                $"-c:v libvpx-vp9 -b:v 0 -crf {crf} {scaleArg} {audioArgWebm} -y \"{webmOutput}\"";
+        }
+
+        return args;
+    }
+
     private async Task RunTool(FileItem file, string toolName) {
         var toolPath = Path.Combine(AppContext.BaseDirectory, "Tools", toolName);
 
@@ -72,8 +103,7 @@ public class FileOptimizer(Settings settings) {
             "gifsicle.exe" =>
                 $"--optimize=3 --lossy={settings.GifQuality * 2} \"{file.Path}\" -o \"{tempOutput}\"",
 
-            "ffmpeg.exe" =>
-                $"-hide_banner -loglevel info -i \"{file.Path}\" -c:v libx264 -preset fast -crf {(int)(51 - (settings.Mp4Quality / 100.0 * 51))} -c:a copy -y \"{tempOutput}\"",
+            "ffmpeg.exe" => BuildFfmpegArgs(file, tempOutput),
 
             _ => throw new NotSupportedException($"{toolName} not supported")
         };

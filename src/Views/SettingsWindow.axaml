@@ -7,7 +7,7 @@
 	x:DataType="vm:SettingsViewModel"
 	Title="Settings"
 	Width="550"
-	Height="330"
+	Height="410"
 >
 	<!-- Design-time DataContext -->
 	<Design.DataContext>
@@ -87,7 +87,7 @@
 		</Grid>
 
 		<!-- MP4 -->
-		<Grid ColumnDefinitions="120,*,40" VerticalAlignment="Center" Margin="0,6">
+		<Grid ColumnDefinitions="120,*,40" VerticalAlignment="Center">
 			<TextBlock
 				FontWeight="SemiBold"
 				Grid.Column="0"
@@ -108,6 +108,29 @@
 				TextAlignment="Center"
 			/>
 		</Grid>
+
+        <!-- WENM -->
+        <Grid ColumnDefinitions="120,*,40" VerticalAlignment="Center">
+            <TextBlock
+				FontWeight="SemiBold"
+				Grid.Column="0"
+				Text="WEBM Quality"
+				VerticalAlignment="Center"
+			/>
+            <Slider
+				Grid.Column="1"
+				Minimum="1"
+				Maximum="100"
+				Value="{Binding WebmQuality}"
+				VerticalAlignment="Center"
+			/>
+            <TextBlock
+				Grid.Column="2"
+				Text="{Binding WebmQuality}"
+				VerticalAlignment="Center"
+				TextAlignment="Center"
+			/>
+        </Grid>
 
 		<!-- Parallelism -->
 		<Grid 
@@ -132,11 +155,48 @@
 			/>
 		</Grid>
 
-		<!-- Replace -->
-		<CheckBox
-			Content="Replace original file"
-			IsChecked="{Binding ReplaceOriginalFile}" 
-		/>
+        <Grid ColumnDefinitions="120,*">
+            <TextBlock
+                Grid.Column="0"
+                Text="Scale Video"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+            />
+            <ComboBox
+                Grid.Column="1"
+                ItemsSource="{Binding VideoScaleOptions}"
+                SelectedItem="{Binding SelectedScaleOption}"
+                VerticalAlignment="Center">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- lowercase property names -->
+                        <TextBlock Text="{Binding label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Spacing="24"  Margin="0,16,0,0">
+		    <!-- Replace file -->
+		    <CheckBox
+			    Content="Replace Original File"
+			    IsChecked="{Binding ReplaceOriginalFile}" 
+		    />
+
+            <!-- Remove audio -->
+            <CheckBox
+                Content="Remove Audio"
+                IsChecked="{Binding RemoveAudio}"
+		    />
+
+            <!-- Output -->
+            <CheckBox
+                Content="Output WEBM"
+                IsChecked="{Binding OutputWebm}"
+		    />
+        </StackPanel>
+
+
 
 	</StackPanel>
 </Window>

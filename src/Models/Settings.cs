@@ -24,9 +24,17 @@ public class Settings {
 
     public int Mp4Quality { get; set; } = 70;
 
+    public int WebmQuality { get; set; } = 70;
+
     public int MaxParallelism { get; set; } = 4;
 
     public bool ReplaceOriginalFile { get; set; } = false;
+
+    public bool RemoveAudio { get; set; } = false;
+
+    public bool OutputWebm { get; set; } = false;
+
+    public VideoScale ScaleVideo { get; set; } = VideoScale.Original;
 
     // Load settings from file, or return defaults if not found/invalid
     public static Settings Load() {
