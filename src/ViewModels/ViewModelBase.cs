@@ -1,6 +1,6 @@
-﻿using ReactiveUI;
+﻿namespace OptimizeRK.ViewModels;
 
-namespace OptimizeRK.ViewModels;
+using ReactiveUI;
 
 public class ViewModelBase : ReactiveObject {
 }

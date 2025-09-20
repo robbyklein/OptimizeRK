@@ -1,0 +1,9 @@
+[*.cs]
+dotnet_diagnostic.SA1500.severity = none # "Braces must not be omitted"
+dotnet_diagnostic.SA1502.severity = none # "Element must not be on a single line"
+dotnet_diagnostic.SA1600.severity = none # XML docs
+dotnet_diagnostic.SA1633.severity = none # File headers
+dotnet_diagnostic.SA1010.severity = none # No space before []
+dotnet_diagnostic.SA1101.severity = none # No this. requirement
+dotnet_diagnostic.SA1009.severity = none # Closing parenthesis should be followed by a space
+dotnet_diagnostic.SA1000.severity = none # The keyword 'new' should be followed by a space

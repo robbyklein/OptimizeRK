@@ -1,4 +1,6 @@
-﻿using OptimizeRK.Helpers;
+﻿namespace OptimizeRK.ViewModels;
+
+using OptimizeRK.Helpers;
 using OptimizeRK.Models;
 using ReactiveUI;
 using System.Collections.ObjectModel;
@@ -7,70 +9,72 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 
-namespace OptimizeRK.ViewModels;
-
 public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged {
-	public event PropertyChangedEventHandler? PropertyChanged;
+    public MainWindowViewModel() {
+        Files = [];
 
-	public ObservableCollection<FileItem> Files { get; }
-	public ReactiveCommand<Unit, Unit> OpenInfoCommand { get; }
+        // Recalculate when collection changes
+        Files.CollectionChanged += (s, e) => {
+            OnPropertyChanged(nameof(HasFiles));
+            OnPropertyChanged(nameof(SummaryText));
 
-	public bool HasFiles => Files.Any();
+            // Hook PropertyChanged for new items so SummaryText refreshes when sizes/status change
+            if (e.NewItems != null) {
+                foreach (var item in e.NewItems.OfType<FileItem>()) {
+                    item.PropertyChanged += (_, __) => OnPropertyChanged(nameof(SummaryText));
+                }
+            }
+        };
 
-	public MainWindowViewModel() {
-		Files = new ObservableCollection<FileItem>();
+        OpenInfoCommand = ReactiveCommand.Create(OpenInfo);
+    }
 
-		// Recalculate when collection changes
-		Files.CollectionChanged += (s, e) => {
-			OnPropertyChanged(nameof(HasFiles));
-			OnPropertyChanged(nameof(SummaryText));
+    public new event PropertyChangedEventHandler? PropertyChanged;
 
-			// Hook PropertyChanged for new items so SummaryText refreshes when sizes/status change
-			if (e.NewItems != null) {
-				foreach (var item in e.NewItems.OfType<FileItem>()) {
-					item.PropertyChanged += (_, __) => OnPropertyChanged(nameof(SummaryText));
-				}
-			}
-		};
+    public string SummaryText {
+        get {
+            if (!Files.Any()) {
+                return string.Empty;
+            }
 
-		OpenInfoCommand = ReactiveCommand.Create(OpenInfo);
-	}
+            long totalOriginal = Files.Sum(f => f.OriginalSize);
+            long totalNew = Files.Sum(f => f.NewSize);
+            long totalSaved = totalOriginal - totalNew;
 
-	protected void OnPropertyChanged(string propertyName) =>
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (totalOriginal <= 0) {
+                return string.Empty;
+            }
 
-	private void OpenInfo() {
-		var url = "https://github.com/AvaloniaUI/Avalonia";
+            double avgPercent = Files.Average(f =>
+                f.OriginalSize > 0 ? (1 - ((double)f.NewSize / f.OriginalSize)) * 100 : 0);
 
-		try {
-			Process.Start(new ProcessStartInfo {
-				FileName = url,
-				UseShellExecute = true
-			});
-		} catch {
-			// optionally handle errors
-		}
-	}
+            double maxPercent = Files.Max(f =>
+                f.OriginalSize > 0 ? (1 - ((double)f.NewSize / f.OriginalSize)) * 100 : 0);
 
-	public string SummaryText {
-		get {
-			if (!Files.Any())
-				return "";
+            return $"Saved {ByteSize.Format(totalSaved)} out of {ByteSize.Format(totalOriginal)}. " +
+                   $"{avgPercent:0.##}% per file on average (up to {maxPercent:0.##}%).";
+        }
+    }
 
-			long totalOriginal = Files.Sum(f => f.OriginalSize);
-			long totalNew = Files.Sum(f => f.NewSize);
-			long totalSaved = totalOriginal - totalNew;
+    public ObservableCollection<FileItem> Files { get; }
 
-			if (totalOriginal <= 0) return "";
+    public ReactiveCommand<Unit, Unit> OpenInfoCommand { get; }
 
-			double avgPercent = Files.Average(f =>
-				f.OriginalSize > 0 ? (1 - (double)f.NewSize / f.OriginalSize) * 100 : 0);
+    public bool HasFiles => Files.Any();
 
-			double maxPercent = Files.Max(f =>
-				f.OriginalSize > 0 ? (1 - (double)f.NewSize / f.OriginalSize) * 100 : 0);
+    protected void OnPropertyChanged(string propertyName) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-			return $"Saved {ByteSize.Format(totalSaved)} out of {ByteSize.Format(totalOriginal)}. " +
-				   $"{avgPercent:0.##}% per file on average (up to {maxPercent:0.##}%).";
-		}
-	}
+    private void OpenInfo() {
+        var url = "https://github.com/AvaloniaUI/Avalonia";
+
+        try {
+            Process.Start(new ProcessStartInfo {
+                FileName = url,
+                UseShellExecute = true,
+            });
+        } catch {
+            // optionally handle errors
+        }
+    }
 }

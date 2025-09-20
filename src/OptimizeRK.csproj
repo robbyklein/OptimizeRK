@@ -21,6 +21,10 @@
 			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="ReactiveUI" Version="21.0.1" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 		<PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.6.2" />
 	</ItemGroup>
 	
