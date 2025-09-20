@@ -20,10 +20,10 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/OptimizeRK.csproj
 
       - name: Build (with StyleCop analyzers)
-        run: dotnet build --no-restore -warnaserror
+        run: dotnet build src/OptimizeRK.csproj --no-restore -warnaserror
 
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test src/OptimizeRK.csproj --no-build --verbosity normal
