@@ -7,3 +7,4 @@ dotnet_diagnostic.SA1010.severity = none # No space before []
 dotnet_diagnostic.SA1101.severity = none # No this. requirement
 dotnet_diagnostic.SA1009.severity = none # Closing parenthesis should be followed by a space
 dotnet_diagnostic.SA1000.severity = none # The keyword 'new' should be followed by a space
+dotnet_diagnostic.SA1601.severity = none  # Partial elements should be documented

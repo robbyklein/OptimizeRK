@@ -1,4 +1,6 @@
-﻿using Avalonia.Controls;
+﻿namespace OptimizeRK;
+
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using OptimizeRK.Models;
@@ -7,80 +9,77 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace OptimizeRK;
-
 public partial class MainWindow : Window {
+    public MainWindow() {
+        InitializeComponent();
 
-	public MainWindow() {
-		InitializeComponent();
+        DropZone.AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        DropZone.AddHandler(DragDrop.DropEvent, OnDrop);
+    }
 
+    public void OnSettingsClick(object sender, RoutedEventArgs args) {
+        var settingsWindow = new SettingsWindow {
+            DataContext = new ViewModels.SettingsViewModel(),
+        };
+        settingsWindow.Show();
+    }
 
-		DropZone.AddHandler(DragDrop.DragOverEvent, OnDragOver);
-		DropZone.AddHandler(DragDrop.DropEvent, OnDrop);
+    public void OnInfoClick(object sender, RoutedEventArgs args) {
+        var url = "https://github.com/robbyklein/optimizerk";
 
-	}
+        try {
+            Process.Start(new ProcessStartInfo {
+                FileName = url,
+                UseShellExecute = true,
+            });
+        } catch {
+            // optionally handle errors
+        }
+    }
 
-	public void OnSettingsClick(object sender, RoutedEventArgs args) {
-		var settingsWindow = new SettingsWindow();
-		settingsWindow.DataContext = new ViewModels.SettingsViewModel();
-		settingsWindow.Show();
-	}
+    private void OnDragOver(object? sender, DragEventArgs e) {
+        if (e.Data.Contains(DataFormats.Files)) {
+            e.DragEffects = DragDropEffects.Copy;
+        } else {
+            e.DragEffects = DragDropEffects.None;
+        }
 
-	public void OnInfoClick(object sender, RoutedEventArgs args) {
-		var url = "https://github.com/robbyklein/optimizerk";
+        e.Handled = true;
+    }
 
-		try {
-			Process.Start(new ProcessStartInfo {
-				FileName = url,
-				UseShellExecute = true
-			});
-		} catch {
-			// optionally handle errors
-		}
-	}
+    private async void OnDrop(object? sender, DragEventArgs e) {
+        if (DataContext is MainWindowViewModel vm && e.Data.Contains(DataFormats.Files)) {
+            var droppedFiles = e.Data.GetFiles() ?? [];
 
-	private void OnDragOver(object? sender, DragEventArgs e) {
-		if (e.Data.Contains(DataFormats.Files))
-			e.DragEffects = DragDropEffects.Copy;
-		else
-			e.DragEffects = DragDropEffects.None;
+            var newItems = new List<FileItem>();
 
-		e.Handled = true;
-	}
+            foreach (var file in droppedFiles) {
+                var path = file.Path.LocalPath;
+                if (File.Exists(path)) {
+                    var originalInfo = new FileInfo(path);
 
-	private async void OnDrop(object? sender, DragEventArgs e) {
-		if (DataContext is MainWindowViewModel vm && e.Data.Contains(DataFormats.Files)) {
-			var droppedFiles = e.Data.GetFiles() ?? [];
+                    var item = new Models.FileItem {
+                        Name = originalInfo.Name,
+                        Path = originalInfo.FullName,
+                        OriginalSize = originalInfo.Length,
+                        NewSize = originalInfo.Length,
+                        Status = ProcessStatus.Pending,
+                    };
 
-			var newItems = new List<FileItem>();
+                    vm.Files.Add(item);
+                    newItems.Add(item); // track only newly added
+                }
+            }
 
-			foreach (var file in droppedFiles) {
-				var path = file.Path.LocalPath;
-				if (File.Exists(path)) {
-					var originalInfo = new FileInfo(path);
+            if (newItems.Count > 0) {
+                var settings = Settings.Load();
+                var optimizer = new Services.FileOptimizer(settings);
 
-					var item = new Models.FileItem {
-						Name = originalInfo.Name,
-						Path = originalInfo.FullName,
-						OriginalSize = originalInfo.Length,
-						NewSize = originalInfo.Length,
-						Status = ProcessStatus.Pending
-					};
+                // Optimize only the new items
+                await optimizer.OptimizeFilesAsync(newItems);
+            }
+        }
 
-					vm.Files.Add(item);
-					newItems.Add(item); // track only newly added
-				}
-			}
-
-			if (newItems.Count > 0) {
-				var settings = Settings.Load();
-				var optimizer = new Services.FileOptimizer(settings);
-
-				// Optimize only the new items
-				await optimizer.OptimizeFilesAsync(newItems);
-			}
-		}
-
-		e.Handled = true;
-	}
+        e.Handled = true;
+    }
 }
