@@ -11,6 +11,8 @@ OptimizeRK is an open-source Windows application for optimizing images and media
 - Compress **video** with [FFmpeg](https://ffmpeg.org/)
 - Quality setting slider for each media type
 - Option to replace original file or create a new one
+- Right-click supported files in Explorer → **Optimize with OptimizeRK** (under "Show more options" on Windows 11)
+- Windows notification with the savings when a batch finishes
 
 ## 📦 Installation
 

@@ -7,9 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 public class FileOptimizer(Settings settings) {
+    private static readonly SemaphoreSlim VideoGate = new(1);
+
     private readonly Settings settings = settings;
 
     public async Task OptimizeFilesAsync(IEnumerable<FileItem> files) {
@@ -35,7 +38,14 @@ public class FileOptimizer(Settings settings) {
                             break;
 
                         case ".mp4":
-                            await RunTool(file, "ffmpeg.exe");
+                            // ffmpeg already uses every core, so encoding videos side by side only adds memory pressure
+                            await VideoGate.WaitAsync();
+                            try {
+                                await RunTool(file, "ffmpeg.exe");
+                            } finally {
+                                VideoGate.Release();
+                            }
+
                             break;
 
                         default:
@@ -55,22 +65,24 @@ public class FileOptimizer(Settings settings) {
     }
 
     private string BuildFfmpegArgs(FileItem file, string tempOutput) {
-        // Calculate CRF based on quality (lower CRF = higher quality)
-        var crf = (int)(51 - (settings.Mp4Quality / 100.0 * 51));
+        // Map quality 1-100 onto the CRF range that's useful for the web (lower CRF = higher quality).
+        // At the default of 70: H.264 CRF 26 and VP9 CRF 34, both around VMAF 93-96.
+        var h264Crf = (int)Math.Round(40 - (settings.Mp4Quality * 0.2));
+        var vp9Crf = (int)Math.Round(55 - (settings.WebmQuality * 0.3));
 
-        // Audio
-        var audioArgMp4 = settings.RemoveAudio ? "-an" : "-c:a copy";
-        var audioArgWebm = settings.RemoveAudio ? "-an" : "-c:a libopus";
+        // Cap the width without ever upscaling, and keep both dimensions even, which yuv420p requires.
+        // yuv420p is also the only pixel format every browser can play.
+        var width = settings.ScaleVideo == VideoScale.Original ? "iw" : $"min(iw,{(int)settings.ScaleVideo})";
+        var video = $"-vf \"scale='trunc({width}/2)*2':-2,setsar=1\" -pix_fmt yuv420p";
 
-        // Scaling (based on width now)
-        var scaleArg = settings.ScaleVideo == VideoScale.Original
-            ? string.Empty
-            : $"-vf scale={(int)settings.ScaleVideo}:-2";
+        var audioArgMp4 = settings.RemoveAudio ? "-an" : "-c:a aac -b:a 128k";
+        var audioArgWebm = settings.RemoveAudio ? "-an" : "-c:a libopus -b:a 96k";
 
-        // Always output MP4
+        // Always output MP4. faststart puts the index first so browsers can start playing before it's all downloaded,
+        // and -map_metadata -1 drops metadata such as the GPS location phones record.
         var args =
             $"-hide_banner -loglevel info -i \"{file.Path}\" " +
-            $"-c:v libx264 -preset fast -crf {crf} {scaleArg} {audioArgMp4} -y \"{tempOutput}\"";
+            $"-c:v libx264 -preset slow -crf {h264Crf} {video} {audioArgMp4} -map_metadata -1 -movflags +faststart -y \"{tempOutput}\"";
 
         // Optionally also output WebM
         if (settings.OutputWebm) {
@@ -78,8 +90,9 @@ public class FileOptimizer(Settings settings) {
                 Path.GetDirectoryName(file.Path)!,
                 Path.GetFileNameWithoutExtension(file.Path) + "_optimized.webm");
 
+            // row-mt and cpu-used 2 make libvpx several times faster for about the same size
             args += " " +
-                $"-c:v libvpx-vp9 -b:v 0 -crf {crf} {scaleArg} {audioArgWebm} -y \"{webmOutput}\"";
+                $"-c:v libvpx-vp9 -b:v 0 -crf {vp9Crf} -deadline good -cpu-used 2 -row-mt 1 {video} {audioArgWebm} -map_metadata -1 -y \"{webmOutput}\"";
         }
 
         return args;
@@ -146,6 +159,14 @@ public class FileOptimizer(Settings settings) {
             throw new Exception($"{toolName} failed (Exit {process.ExitCode}). See logs above.");
         }
 
+        // Keep the original if re-encoding didn't make it smaller (e.g. a video already compressed for the web)
+        if (new FileInfo(tempOutput).Length >= file.OriginalSize) {
+            File.Delete(tempOutput);
+            file.NewSize = file.OriginalSize;
+            file.OutputPath = file.Path;
+            return;
+        }
+
         // Replace original if configured
         var finalOutput = settings.ReplaceOriginalFile ? file.Path : tempOutput;
 
@@ -156,5 +177,6 @@ public class FileOptimizer(Settings settings) {
 
         var info = new FileInfo(finalOutput);
         file.NewSize = info.Length;
+        file.OutputPath = finalOutput;
     }
 }

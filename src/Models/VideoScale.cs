@@ -7,24 +7,24 @@ public enum VideoScale {
     /// <summary>Keep the original resolution.</summary>
     Original = 0,
 
-    /// <summary>Scale video height to 3840 pixels.</summary>
+    /// <summary>Limit video width to 3840 pixels (smaller videos are left as is).</summary>
     Scale3840 = 3840,
 
-    /// <summary>Scale video height to 2560 pixels.</summary>
+    /// <summary>Limit video width to 2560 pixels (smaller videos are left as is).</summary>
     Scale2560 = 2560,
 
-    /// <summary>Scale video height to 1920 pixels.</summary>
+    /// <summary>Limit video width to 1920 pixels (smaller videos are left as is).</summary>
     Scale1920 = 1920,
 
-    /// <summary>Scale video height to 1280 pixels.</summary>
+    /// <summary>Limit video width to 1280 pixels (smaller videos are left as is).</summary>
     Scale1280 = 1280,
 
-    /// <summary>Scale video height to 1024 pixels.</summary>
+    /// <summary>Limit video width to 1024 pixels (smaller videos are left as is).</summary>
     Scale1024 = 1024,
 
-    /// <summary>Scale video height to 720 pixels.</summary>
+    /// <summary>Limit video width to 720 pixels (smaller videos are left as is).</summary>
     Scale720 = 720,
 
-    /// <summary>Scale video height to 480 pixels.</summary>
+    /// <summary>Limit video width to 480 pixels (smaller videos are left as is).</summary>
     Scale480 = 480,
 }
