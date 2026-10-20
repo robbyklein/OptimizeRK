@@ -1,15 +1,24 @@
 ﻿namespace OptimizeRK.ViewModels;
 
+using Avalonia.Threading;
 using OptimizeRK.Helpers;
 using OptimizeRK.Models;
+using OptimizeRK.Services;
 using ReactiveUI;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 
 public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged {
+    private static readonly TimeSpan BatchDelay = TimeSpan.FromMilliseconds(500);
+    private readonly List<FileItem> queued = [];
+    private IDisposable? batchTimer;
+
     public MainWindowViewModel() {
         Files = [];
 
@@ -62,8 +71,48 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged {
 
     public bool HasFiles => Files.Any();
 
+    // Adds files to the list and optimizes them. Must be called on the UI thread.
+    public void AddFiles(IEnumerable<string> paths) {
+        foreach (var path in paths) {
+            if (!File.Exists(path)) {
+                continue;
+            }
+
+            var info = new FileInfo(path);
+            var item = new FileItem {
+                Name = info.Name,
+                Path = info.FullName,
+                OriginalSize = info.Length,
+                NewSize = info.Length,
+                Status = ProcessStatus.Pending,
+            };
+
+            Files.Add(item);
+            queued.Add(item);
+        }
+
+        if (queued.Count == 0) {
+            return;
+        }
+
+        // A multi-file right-click arrives a file at a time (one copy of the app per file),
+        // so wait until they stop coming and optimize them as one batch with one notification.
+        batchTimer?.Dispose();
+        batchTimer = DispatcherTimer.RunOnce(OptimizeQueued, BatchDelay);
+    }
+
     protected void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private async void OptimizeQueued() {
+        var batch = queued.ToList();
+        queued.Clear();
+
+        var optimizer = new FileOptimizer(Settings.Load());
+        await optimizer.OptimizeFilesAsync(batch);
+
+        Notifier.ShowSummary(batch);
+    }
 
     private void OpenInfo() {
         var url = "https://github.com/AvaloniaUI/Avalonia";

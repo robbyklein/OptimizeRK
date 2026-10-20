@@ -6,6 +6,12 @@
 #define MyAppPublisher "Robert Klein"
 #define MyAppURL "https://robbyk.com"
 #define MyAppExeName "OptimizeRK.exe"
+; Must match Notifier.AppId. Windows titles the app's notifications from the shortcut carrying this ID.
+#define MyAppUserModelID "RobertKlein.OptimizeRK"
+; COM class Windows starts the app through when a notification is clicked. The notifications library
+; derives it from the app ID, so if that changes, copy the new CustomActivator value from
+; HKCU\Software\Classes\AppUserModelId\<app ID> after running the app once.
+#define MyToastActivatorCLSID "4fe8b0a9-9059-b09f-7d10-2badc5151637"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -29,13 +35,16 @@ ArchitecturesAllowed=x64compatible
 ; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Robby\Developer\OptimizeRK\LICENSE
+; Relative paths are resolved from this script's folder.
+LicenseFile=..\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 OutputBaseFilename=OptimizeRK-Setup
-SetupIconFile=C:\Users\Robby\Developer\OptimizeRK\src\Images\favicon.ico
+SetupIconFile=..\src\Images\favicon.ico
 SolidCompression=yes
 WizardStyle=modern
+; Refresh Explorer so the right-click menu entry shows up without signing out.
+ChangesAssociations=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -44,15 +53,43 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Robby\Developer\OptimizeRK\build\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Robby\Developer\OptimizeRK\build\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Robby\Developer\OptimizeRK\licenses\*"; DestDir: "{app}\licenses"; Flags: recursesubdirs createallsubdirs
+Source: "..\build\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\licenses\*"; DestDir: "{app}\licenses"; Flags: recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
+[Registry]
+; Right-click → "Optimize with OptimizeRK" for each supported file type. On Windows 11 it's under "Show more options".
+; MultiSelectModel=Player lets it appear when up to 100 files are selected (the default cuts off at 15).
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.png\shell\OptimizeRK"; ValueType: string; ValueName: ""; ValueData: "Optimize with OptimizeRK"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.png\shell\OptimizeRK"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.png\shell\OptimizeRK"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.png\shell\OptimizeRK\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\OptimizeRK"; ValueType: string; ValueName: ""; ValueData: "Optimize with OptimizeRK"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\OptimizeRK"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\OptimizeRK"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpg\shell\OptimizeRK\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\OptimizeRK"; ValueType: string; ValueName: ""; ValueData: "Optimize with OptimizeRK"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\OptimizeRK"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\OptimizeRK"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.jpeg\shell\OptimizeRK\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.gif\shell\OptimizeRK"; ValueType: string; ValueName: ""; ValueData: "Optimize with OptimizeRK"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.gif\shell\OptimizeRK"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.gif\shell\OptimizeRK"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.gif\shell\OptimizeRK\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.mp4\shell\OptimizeRK"; ValueType: string; ValueName: ""; ValueData: "Optimize with OptimizeRK"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.mp4\shell\OptimizeRK"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.mp4\shell\OptimizeRK"; ValueType: string; ValueName: "MultiSelectModel"; ValueData: "Player"
+Root: HKA; Subkey: "Software\Classes\SystemFileAssociations\.mp4\shell\OptimizeRK\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; AppUserModelID: "{#MyAppUserModelID}"; AppUserModelToastActivatorCLSID: "{#MyToastActivatorCLSID}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; AppUserModelID: "{#MyAppUserModelID}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+; Removes the notification registrations Windows keeps for the app.
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--uninstall"; Flags: runhidden; RunOnceId: "RemoveNotifications"
 

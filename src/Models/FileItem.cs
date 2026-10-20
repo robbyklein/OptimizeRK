@@ -45,6 +45,9 @@ public class FileItem : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref status, value);
     }
 
+    // Where the optimized file was written (the original path if it was replaced)
+    public string? OutputPath { get; set; }
+
     public string OriginalSizeDisplay => ByteSize.Format(OriginalSize);
 
     public string NewSizeDisplay => ByteSize.Format(NewSize);

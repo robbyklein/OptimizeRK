@@ -3,11 +3,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using OptimizeRK.Models;
 using OptimizeRK.ViewModels;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
 
 public partial class MainWindow : Window {
     public MainWindow() {
@@ -37,6 +35,14 @@ public partial class MainWindow : Window {
         }
     }
 
+    public void BringToFront() {
+        if (WindowState == WindowState.Minimized) {
+            WindowState = WindowState.Normal;
+        }
+
+        Activate();
+    }
+
     private void OnDragOver(object? sender, DragEventArgs e) {
         if (e.Data.Contains(DataFormats.Files)) {
             e.DragEffects = DragDropEffects.Copy;
@@ -47,37 +53,10 @@ public partial class MainWindow : Window {
         e.Handled = true;
     }
 
-    private async void OnDrop(object? sender, DragEventArgs e) {
+    private void OnDrop(object? sender, DragEventArgs e) {
         if (DataContext is MainWindowViewModel vm && e.Data.Contains(DataFormats.Files)) {
             var droppedFiles = e.Data.GetFiles() ?? [];
-
-            var newItems = new List<FileItem>();
-
-            foreach (var file in droppedFiles) {
-                var path = file.Path.LocalPath;
-                if (File.Exists(path)) {
-                    var originalInfo = new FileInfo(path);
-
-                    var item = new Models.FileItem {
-                        Name = originalInfo.Name,
-                        Path = originalInfo.FullName,
-                        OriginalSize = originalInfo.Length,
-                        NewSize = originalInfo.Length,
-                        Status = ProcessStatus.Pending,
-                    };
-
-                    vm.Files.Add(item);
-                    newItems.Add(item); // track only newly added
-                }
-            }
-
-            if (newItems.Count > 0) {
-                var settings = Settings.Load();
-                var optimizer = new Services.FileOptimizer(settings);
-
-                // Optimize only the new items
-                await optimizer.OptimizeFilesAsync(newItems);
-            }
+            vm.AddFiles(droppedFiles.Select(file => file.Path.LocalPath));
         }
 
         e.Handled = true;
